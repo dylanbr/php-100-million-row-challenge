@@ -154,7 +154,9 @@ final class Parser
         $counters = [];
         $dates = [];
 
+        // Move the file pointer to the start of the section.
         \fseek($input, $start);
+
         $chunkSize = \min(self::READ_CHUNK_SIZE, $end - $start);
         $chunk = \fread($input, $chunkSize);
         $chunkLen = \strlen($chunk);
@@ -165,9 +167,9 @@ final class Parser
             $lineEnd = \strpos($chunk, "\n", $chunkStart);
 
             // When there is no line ending, but more input to read, grab another chunk and append
-            // it to what is left of the current chunk.
+            // it to what is left of the current chunk. Keep doing this till either the next line
+            // ending is found, or the end of the section is reached.
             while ($lineEnd === false && $current < $end) {
-                // No newline found, and we are not at the end of the file, so carry this chunk over to the next read.
                 $chunkSize = \min(self::READ_CHUNK_SIZE, $end - $current);
                 $chunk = \substr($chunk, $chunkStart) . \fread($input, $chunkSize);
                 $chunkLen = \strlen($chunk);
