@@ -28,6 +28,9 @@ final class Parser
     // The timestamp is always the same length.
     const TIMESTAMP_LEN = 26;
 
+    // As is the date
+    const DATE_LEN = 10;
+
     public function parse(string $inputPath, string $outputPath): void
     {
         // Don't bother with garbage collection, to avoid any random slowdowns.
@@ -191,7 +194,7 @@ final class Parser
             $uri  = \substr($chunk, $uriStart, $comma - $uriStart);
 
             // Store all dates so that multiple strings for the same date are not created.
-            $dateStr = \substr($chunk, $comma + 1, 10);
+            $dateStr = \substr($chunk, $comma + 1, self::DATE_LEN);
             $date = $dates[$dateStr] ??= $dateStr;
 
             if (!isset($counters[$uri][$date])) {
