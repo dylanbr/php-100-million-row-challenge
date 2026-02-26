@@ -35,16 +35,20 @@ final class Parser
     // As is the date
     const DATE_LEN = 10;
 
+    private float $startTime;
+    private ?float $previousTime = null;
+
     public function parse(string $inputPath, string $outputPath): void
     {
+        // Get the starting time for logging elapsed time for each step.
+        $this->startTime = \microtime(true);
+
         // Don't bother with garbage collection, to avoid any random slowdowns.
         \gc_disable();
 
         // Memory usage is expected to be high, but limited by the chunk size, so limit it to less than the 1.5GB that the test machine has.
         \ini_set('memory_limit', self::MEMORY_LIMIT);
 
-
-        $time = \microtime(true);
 
         $fileSize = \filesize($inputPath);
         $splitSize = (int)($fileSize / self::WORKER_COUNT);
@@ -72,6 +76,8 @@ final class Parser
         }
         $splits[] = $fileSize;
 
+        $this->logTime("Split");
+
         for ($i = 0; $i < self::WORKER_COUNT; $i++) {
             \socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $sockets[$i]);
             $pid = \pcntl_fork();
@@ -95,7 +101,7 @@ final class Parser
             \socket_close($pair[0]);
         }
 
-        echo "Parsed in " . (\microtime(true) - $time) . " seconds.\n";
+        $this->logTime('Parsed');
 
         // Take the first worker results as the starting point, and merge the results of the other workers into it.
         $counters = $results[0];
@@ -111,7 +117,7 @@ final class Parser
             }
         }
 
-        echo "Marged in " . (\microtime(true) - $time) . " seconds.\n";
+        $this->logTime('Merged');
 
         $output = \fopen($outputPath, 'wb');
         \stream_set_write_buffer($output, self::STREAM_BUFFER_SIZE);
@@ -147,10 +153,9 @@ final class Parser
         }
         $buffer .= "\n}";
         \fwrite($output, $buffer);
-
-        echo "Written in " . (\microtime(true) - $time) . " seconds.\n";
-
         @\fclose($output);
+
+        $this->logTime('Written');
     }
 
     private function parseSection($inputPath, $start, $end): array
@@ -213,6 +218,20 @@ final class Parser
         \fclose($input);
 
         return $counters;
+    }
+
+    /**
+     * Use the start time to calculate the elapsed time and output a message with the elapsed,
+     * formatted time in seconds.
+     */
+    private function logTime(string $message): void
+    {
+        $elapsedTotal = number_format(\microtime(true) - $this->startTime, 4);
+        $elapsedPrevious = number_format(\microtime(true) - ($this->previousTime ?? $this->startTime), 4);
+
+        $this->previousTime = \microtime(true);
+
+        echo "$message in $elapsedPrevious seconds, $elapsedTotal seconds in total.\n";
     }
 
     private static function serialize(mixed $data): string
