@@ -6,6 +6,10 @@ use Exception;
 
 final class Parser
 {
+    // Memory usage is expected to be high, but limited by the chunk size, so limit it to what is
+    // likely available on the 12GB benchmark machine.
+    const MEMORY_LIMIT = '8192M';
+
     // Most URLs are less than 100 characters, so 256 is a safe buffer size to find at least one newline.
     const NEWLINE_SEARCH_SIZE = 256;
 
@@ -16,7 +20,7 @@ final class Parser
     const READ_CHUNK_SIZE = 128 << 20;
 
     // Number of workers to split the input into.
-    const WORKER_COUNT = 4;
+    const WORKER_COUNT = 8;
 
     // A line is ±75 characters, so 75 * 2^14 = 1.2 MiB, which is a good buffer size for this input,
     // so set a mask to quickly check when this many lines have been buffered.
@@ -37,7 +41,7 @@ final class Parser
         \gc_disable();
 
         // Memory usage is expected to be high, but limited by the chunk size, so limit it to less than the 1.5GB that the test machine has.
-        \ini_set('memory_limit', '1024M');
+        \ini_set('memory_limit', self::MEMORY_LIMIT);
 
 
         $time = \microtime(true);
