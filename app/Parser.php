@@ -11,10 +11,10 @@ final class Parser
     const MEMORY_LIMIT = '8192M';
 
     // 16MB read/write buffers.
-    const STREAM_BUFFER_SIZE = 16 << 20;
+    const STREAM_BUFFER_SIZE = 1 << 20;
 
     // 128MB chunk size when reading input.
-    const READ_CHUNK_SIZE = 32 << 20;
+    const READ_CHUNK_SIZE = 8 << 20;
 
     // A line is ±75 characters, so 75 * 2^14 = 1.2 MiB, which is a good buffer size for this input,
     // so set a mask to quickly check when this many lines have been buffered.
