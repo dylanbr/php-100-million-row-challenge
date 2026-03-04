@@ -194,9 +194,6 @@ final class Parser
                 while ($chunkStart < $chunkEnd) {
                     // Find the next comma.
                     $comma = \strpos($chunk, ",", $chunkStart);
-                    if ($comma === false) {
-                        echo "DEAD\n";
-                    }
 
                     $uri  = \substr($chunk, $chunkStart, $comma - $chunkStart);
                     if (($uriIndex = $uris[$uri] ?? null) === null) {
