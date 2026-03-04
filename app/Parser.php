@@ -18,7 +18,7 @@ final class Parser
     const STREAM_BUFFER_SIZE = 1 << 20;
 
     // 128MB chunk size when reading input.
-    const READ_CHUNK_SIZE = 8 << 20;
+    const READ_CHUNK_SIZE = 2 << 20;
 
     // Number of workers to split the input into.
     const WORKER_COUNT = 8;
@@ -188,8 +188,7 @@ final class Parser
                 $chunkEnd = $chunkSize;
             } else {
                 $chunkEnd = \strrpos($chunk, "\n");
-                $extra = $chunkSize - $chunkEnd - 1;
-                if ($extra !== 0) {
+                if (($extra = $chunkSize - $chunkEnd - 1) !== 0) {
                     $current -= $extra;
                     \fseek($input, $current);
                 }
