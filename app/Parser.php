@@ -110,11 +110,7 @@ final class Parser
                     $uriIndex = $uris[$workerUri] = count($uris) * $dateCount;
                 }
                 foreach($this->dates as $date => $dateIndex) {
-                    $count = $workerCounters[$workerUriIndex + $dateIndex];
-                    if ($count > 0) {
-                        $counterIndex = $uriIndex + $dateIndex;
-                        $counters[$counterIndex] += $count;
-                    }
+                    $counters[$uriIndex + $dateIndex] += $workerCounters[$workerUriIndex + $dateIndex];
                 }
             }
         }
@@ -188,7 +184,7 @@ final class Parser
             $chunk = \substr($chunk, $chunkStart - 25) . \fread($input, $chunkSize);
             $chunkStart = 25;
             $current += $chunkSize;
-            if ($current >= $end) {
+            if ($current > $end) {
                 $chunkEnd = $chunkSize;
             } else {
                 $chunkEnd = \strrpos($chunk, "\n");
@@ -198,6 +194,9 @@ final class Parser
                 while ($chunkStart < $chunkEnd) {
                     // Find the next comma.
                     $comma = \strpos($chunk, ",", $chunkStart);
+                    if ($comma === false) {
+                        echo "DEAD\n";
+                    }
 
                     $uri  = \substr($chunk, $chunkStart, $comma - $chunkStart);
                     if (($uriIndex = $uris[$uri] ?? null) === null) {
